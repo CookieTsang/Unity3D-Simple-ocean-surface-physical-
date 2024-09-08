@@ -1,0 +1,51 @@
+//Make a simulated ocean制作一个模拟海洋
+//All are from the Internet learning reference.If there is infringement, please contact delete.
+
+1、Floater：模拟物体在水面上的漂浮和物理反应，一个Floater即为一个漂浮顶点，多个Floater可以提高模拟精度
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class Floater : MonoBehaviour
+{
+    public Rigidbody floater;
+    public float depthBeforeSubmerged = 1f;//淹没前深度
+    public float displacementAmount = 3f;//位移量
+    public int floaterCount = 1;//漂浮的点的数量
+    public float waterDrag = 0.99f;//水的阻力系数
+    public  float waterAngularDrag = 0.5f;//水的角阻力系数
+
+
+    private void FixedUpdate()
+    {
+        floater.AddForceAtPosition(Physics.gravity / floaterCount,transform.position,ForceMode.Acceleration);
+        float waveHight = WaveManager.instance.GetWaveHight(transform.position.x, transform.position.z);
+        if (transform.position.y < waveHight)
+        {   float displacementMultiplier = Mathf.Clamp01((waveHight-transform.position.y)/depthBeforeSubmerged)*displacementAmount;
+            floater.AddForceAtPosition(new Vector3(0f, Mathf.Abs(Physics.gravity.y) * displacementMultiplier,0f),transform.position,ForceMode.Acceleration);
+            floater.AddForce(displacementMultiplier * -floater.velocity * waterDrag * Time.fixedDeltaTime, ForceMode.VelocityChange);
+            floater.AddTorque(displacementMultiplier * -floater.angularVelocity * waterAngularDrag * Time.fixedDeltaTime, ForceMode.VelocityChange);
+        }
+    }
+}
+//这段代码的作用是在一个固定更新周期 (FixedUpdate) 中模拟物体在水中的物理行为
+//•	应用重力：首先对物体施加一个向下的力，这个力等于重力除以 floaterCount，可能是为了模拟多个浮动物体的平均重力效果
+//•	获取波浪高度：通过 WaveManager 获取当前物体位置处的波浪高度
+//•	判断是否在水面下：如果物体的位置低于波浪的高度，则执行以下操作：
+//•	计算位移倍数 displacementMultiplier，这个值取决于物体在水面下的深度，并且被限制在 0 到 1 之间
+//•	向上施加一个与重力相反的力，力的大小取决于位移倍数。
+//•	施加一个阻力来减慢物体的速度，阻力的大小也取决于位移倍数和水的阻力系数 waterDrag
+//•	施加一个扭矩来减慢物体的角速度，扭矩的大小同样取决于位移倍数和水的角阻力系数 waterAngularDrag
+//这段用于模拟物体在水中受到的浮力和阻力效果，使得物体的行为更加真实,多个浮点Floater组成的系统会更加真实
+
+//补充知识：AddTorque方法
+//public void AddTorque(Vector3 torque, ForceMode mode = ForceMode.Force);//功能：对刚体施加一个旋转力。
+
+//参数介绍：torque 决定旋转力的大小和旋转轴的方向，旋转方向参照左手定则；mode 决定作用力的模式，缺省方式为ForceMode.Force
+//ForceMode介绍
+//功能：力的作用方式。枚举类型,有四个枚举成员
+//计算公式：    Ft = mv(t) 即 v(t) = Ft/m
+//(1)ForceMode.Force : 持续施加一个力，与重力mass有关，t = 每帧间隔时间，m = mass
+//(2)ForceMode.Impulse : 瞬间施加一个力，与重力mass有关，t = 1.0f，m = mass
+//(3)ForceMode.Acceleration：持续施加一个力，与重力mass无关，t = 每帧间隔时间，m = 1.0f
+//(4)ForceMode.VelocityChange：瞬间施加一个力，与重力mass无关，t = 1.0f，m = 1.0f
