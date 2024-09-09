@@ -1,5 +1,5 @@
 ![wave](https://github.com/user-attachments/assets/bffe38fe-7aa4-4934-9405-a761f74f839d)
-# Simple-ocean-surface-physical-A summary of online learning.
+# Unity3D-Simple-ocean-surface-physical-A summary of online learning.
 简单的Wave
 每个类和方法协同工作，创建了一个动态且交互的海面效果，确保物体能够根据水面高度正确漂浮，且性能损耗并不大
 主要代码分为三部分：Floater、WaterManager和WaveManager
